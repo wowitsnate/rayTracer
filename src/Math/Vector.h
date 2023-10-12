@@ -5,6 +5,7 @@
 
 #define VECTOR_DEFAULT_EPSILON 1e-8
 #include <cmath>
+#include "../Utility/Utility.h"
 
 
 class Vector3
@@ -154,6 +155,14 @@ inline Vector3 randomOnHemisphere(const Vector3& normal) {
 		return onUnitSphere;
 	else
 		return -onUnitSphere;
+}
+
+inline Vector3 random_in_unit_disk() {
+	while (true) {
+		auto p = Vector3(genRandomDoubleRange(-1, 1), genRandomDoubleRange(-1, 1), 0.0);
+		if (p.squaredNorm() < 1.0)
+			return p;
+	}
 }
 
 using Point3 = Vector3;

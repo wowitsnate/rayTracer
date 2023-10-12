@@ -25,11 +25,14 @@ Camera::Camera(const CameraInitData& data)
 	m_cameraCenter = m_lookFrom;
 
 	//viewport Dimensions
-	m_focalLength = (m_lookFrom - m_lookAt).magnitude();
+	//m_focalLength = (m_lookFrom - m_lookAt).magnitude();
+
+	m_focusDist = data.focusDist;
+	m_defocusAngle = data.defocusAng;
 
 	auto theta = degrees_to_radians(m_vfov);
 	auto H = std::tan(theta / 2);
-	m_viewportHeight = 2 * H * m_focalLength;
+	m_viewportHeight = 2 * H * m_focusDist;
 	m_viewportWidth = m_viewportHeight * (static_cast<double>(m_imageWidth) / m_imageHeight);
 
 	//u, v, w vectors
@@ -45,8 +48,13 @@ Camera::Camera(const CameraInitData& data)
 	m_pixelDeltaU = m_viewportU / m_imageWidth;
 	m_pixelDeltaV = m_viewportV / m_imageHeight;
 
-	m_viewportUpperLeft = m_cameraCenter - (w * m_focalLength) - (m_viewportU / 2) - (m_viewportV / 2);
+	m_viewportUpperLeft = m_cameraCenter - (w * m_focusDist) - (m_viewportU / 2) - (m_viewportV / 2);
 	m_pixel00Loc = m_viewportUpperLeft + ((m_pixelDeltaU + m_pixelDeltaV) * 0.5);
+
+	//camera defocus vectors
+	double defocusRadius = m_focusDist * std::tan(degrees_to_radians(m_defocusAngle / 2.0));
+	m_defocusDiskU = u * defocusRadius;
+	m_defocusDiskV = v * defocusRadius;
 
 	//extra stuff
 	m_samplesPerPixel = data.samplesPerPixel;
@@ -58,7 +66,7 @@ void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmO
 {
 	for (auto j = 0; j < ppmOut.getHeight(); ++j) {
 
-		std::clog << "\rScanlines remaining: " << (ppmOut.getHeight() - j) << ' ' << std::flush;
+		std::clog << "\rScanlines Percent Done: " << (int)(((double)(j) / (double)ppmOut.getHeight()) * 100.0) << "% " << std::flush;
 
 		for (auto i = 0; i < ppmOut.getWidth(); ++i) {
 
@@ -113,7 +121,7 @@ Ray Camera::getRay(int i, int j)
 	auto pixel_center = m_pixel00Loc + (m_pixelDeltaU * i) + (m_pixelDeltaV * j);
 	auto pixel_sample = pixel_center + pixelSampleSquare();
 
-	auto ray_origin = m_cameraCenter; //Doouble check this
+	auto ray_origin = (m_defocusAngle <= 0) ? m_cameraCenter : defocusDiskSample(); //Doouble check this
 	auto ray_direction = pixel_sample - ray_origin;
 
 	return Ray(ray_origin, ray_direction);
@@ -124,4 +132,10 @@ Vector3 Camera::pixelSampleSquare() const
 	auto px = -0.5 + genRandomDouble();
 	auto py = -0.5 + genRandomDouble();
 	return (m_pixelDeltaU * px) + (m_pixelDeltaV * py);
+}
+
+Point3 Camera::defocusDiskSample() const
+{
+	auto p = random_in_unit_disk();
+	return m_cameraCenter + (m_defocusDiskU * p.x) + (m_defocusDiskV * p.y);
 }

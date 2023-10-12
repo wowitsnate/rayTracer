@@ -28,6 +28,9 @@ struct CameraInitData
 	Vector3 lookFrom;
 	Vector3 lookAt;
 	Vector3 vUp;
+
+	double defocusAng;
+	double focusDist;
 };
 
 class Camera
@@ -37,6 +40,9 @@ public:
 	int m_samplesPerPixel;
 	int m_maxRayBounces;
 	double m_vfov;
+
+	double m_defocusAngle;
+	double m_focusDist;
 
 	uint32_t m_imageHeight;
 	uint32_t m_imageWidth;
@@ -62,7 +68,8 @@ private:
 	Vector3 m_viewportUpperLeft;
 	Vector3 m_pixel00Loc;
 
-
+	Vector3 m_defocusDiskU;
+	Vector3 m_defocusDiskV;
 
 	Vec3 u, v, w; //Camera frame basis vectors;
 
@@ -83,6 +90,8 @@ private:
 	Ray getRay(int i, int j);
 
 	Vector3 pixelSampleSquare() const;
+
+	Point3 defocusDiskSample() const;
 
 };
 

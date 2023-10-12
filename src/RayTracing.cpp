@@ -14,7 +14,7 @@ int main()
 {
     std::unique_ptr<HittableList> GObjectList{new HittableList()};
 
-    int ImageWidth = 400;
+    int ImageWidth = 1920;
 
 
     const auto camData = CameraInitData
@@ -22,11 +22,13 @@ int main()
         ImageWidth,
         16.0 / 9.0,
         20,
-        500,
-        150,
-        Point3(-2.0, 2.0, 1.0),
-        Point3(0.0, 0.0, -1.0),
-        Vector3(0.0, 1.0, 0.0)
+        1000,
+        100,
+        Point3(13.0,2.0,3.0),
+        Point3(0.0, 0.0, 0.0),
+        Vector3(0.0, 1.0, 0.0),
+        0.6,
+        10.0
     };
 
     auto camMain = Camera(camData);
@@ -34,19 +36,50 @@ int main()
     
 
     //Materials
-    auto material_ground = std::make_shared<Lambertian>(Colour(0.8, 0.8, 0.0));
-    auto material_center = std::make_shared<Lambertian>(Colour(0.1, 0.2, 0.5));
-    auto material_left = std::make_shared<Dielectric>(1.5);
-    auto material_right = std::make_shared<Metal>(Colour(0.8, 0.6, 0.2), 0.0);
-
+    auto ground_material = std::make_shared<Lambertian>(Colour(0.5, 0.5, 0.5));
+    GObjectList->addObject(std::make_shared<Sphere>(point3(0.0, -1000.0, 0.0), 1000.0, ground_material));
 
     //Add All Out Objects
     
-    GObjectList->addObject(std::make_shared<Sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
-    GObjectList->addObject(std::make_shared<Sphere>(point3(0.0, 0.0, -1.0), 0.5, material_center));
-    GObjectList->addObject(std::make_shared<Sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
-    GObjectList->addObject(std::make_shared<Sphere>(point3(-1.0, 0.0, -1.0), -0.4, material_left));
-    GObjectList->addObject(std::make_shared<Sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
+    
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = genRandomDouble();
+            point3 center(a + 0.9 * genRandomDouble(), 0.2, b + 0.9 * genRandomDouble());
+
+            if ((center - point3(4.0, 0.2, 0.0)).magnitude() > 0.9) {
+	            std::shared_ptr<Material> sphere_material;
+
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    auto albedo = Colour::randColour() * Colour::randColour();
+                    sphere_material = std::make_shared<Lambertian>(albedo);
+                    GObjectList->addObject((std::make_shared<Sphere>(center, 0.2, sphere_material)));
+                }
+                else if (choose_mat < 0.95) {
+                    // metal
+                    auto albedo = Colour::randColour(0.5, 1);
+                    auto fuzz = genRandomDoubleRange(0, 0.5);
+                    sphere_material = std::make_shared<Metal>(albedo, fuzz);
+                    GObjectList->addObject((std::make_shared<Sphere>(center, 0.2, sphere_material)));
+                }
+                else {
+                    // glass
+                    sphere_material = std::make_shared<Dielectric>(1.5);
+                    GObjectList->addObject((std::make_shared<Sphere>(center, 0.2, sphere_material)));
+                }
+            }
+        }
+    }
+
+    auto material1 = std::make_shared<Dielectric>(1.5);
+    GObjectList->addObject(std::make_shared<Sphere>(point3(0, 1, 0), 1.0, material1));
+
+    auto material2 = std::make_shared<Lambertian>(Colour(0.4, 0.2, 0.1));
+    GObjectList->addObject(std::make_shared<Sphere>(point3(-4, 1, 0), 1.0, material2));
+
+    auto material3 = std::make_shared<Metal>(Colour(0.7, 0.6, 0.5), 0.0);
+    GObjectList->addObject(std::make_shared<Sphere>(point3(4, 1, 0), 1.0, material3));
 
 
     camMain.render(GObjectList, ppmOutputFile);
@@ -54,6 +87,7 @@ int main()
 	const bool sucsess = ppmOutputFile.outputToFile("C:\\Users\\nate\\Desktop\\Debug_Testing_Output\\test1.ppm", camData.samplesPerPixel);
 
     std::cout << "Did it work?: " << sucsess << std::endl;
+    system("pause");
 
     return 0;
 }

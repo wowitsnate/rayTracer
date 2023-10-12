@@ -1,5 +1,6 @@
 #include "Colour.h"
 #include <algorithm>
+#include "../Utility/Utility.h"
 
 Colour::Colour(double p_r, double p_g, double p_b)
 {
@@ -46,6 +47,24 @@ std::string Colour::asString() const
 	res.append(std::to_string(static_cast<int>(g * 255.0)) + " ");
 	res.append(std::to_string(static_cast<int>(b * 255.0)));
 	return res;
+}
+
+Colour Colour::randColour()
+{
+	return {
+		genRandomDouble(),
+		genRandomDouble(),
+		genRandomDouble()
+	};
+}
+
+Colour Colour::randColour(double min, double max)
+{
+	return {
+		genRandomDoubleRange(min, max),
+		genRandomDoubleRange(min, max),
+		genRandomDoubleRange(min, max)
+	};
 }
 
 

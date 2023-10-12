@@ -25,6 +25,9 @@ public:
 public:
 	//Converts from 0->1 to 0 -> 255 for convenience
 	std::string asString() const;
+
+	static Colour randColour();
+	static Colour randColour(double min, double max);
 };
 
 
