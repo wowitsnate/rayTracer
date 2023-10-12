@@ -4,6 +4,7 @@
 #include "../Objects/Hittable.h"
 #include "../PPM/PPM.h"
 #include "Camera.h"
+#include "../Utility/Utility.h"
 #include <iostream>
 
 Camera::Camera(const CameraInitData& data)
@@ -24,6 +25,8 @@ Camera::Camera(const CameraInitData& data)
 
 	m_viewportUpperLeft = m_cameraCenter - vec3(0.0, 0.0, m_focalLength) - (m_viewportU / 2) - (m_viewportV / 2);
 	m_pixel00Loc = m_viewportUpperLeft + ((m_pixelDeltaU + m_pixelDeltaV) * 0.5);
+
+	m_samplesPerPixel = data.samplesPerPixel;
 }
 
 void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmOut)
@@ -34,13 +37,14 @@ void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmO
 
 		for (auto i = 0; i < ppmOut.getWidth(); ++i) {
 
-			auto pixelCenter = this->getPixelCenter(i, j);
-			auto ray_direction = pixelCenter - this->getCameraCenter();
+			Colour PixelColour(0.0, 0.0, 0.0);
 
-			Ray r(this->getCameraCenter(), ray_direction);
+			for (int sample = 0; sample < m_samplesPerPixel; ++sample) {
+				Ray r = getRay(i, j);
+				PixelColour += this->getRayColour(r, HittableList);
+			}
 
-			Colour<int> colData = this->getRayColour(r, HittableList);
-			ppmOut.m_data.push_back(colData);
+			ppmOut.m_data.push_back(PixelColour);
 		}
 	}
 }
@@ -50,15 +54,15 @@ Vector3 Camera::getPixelCenter(const int i, const int j) const
 	return m_pixel00Loc + (m_pixelDeltaU * i) + (m_pixelDeltaV * j);
 }
 
-Colour<int> Camera::getRayColour(const Ray& r, const std::unique_ptr<HittableList>& HittableList)
+Colour Camera::getRayColour(const Ray& r, const std::unique_ptr<HittableList>& HittableList)
 {
 	HitRecord rec;
 	if (HittableList->intersects(r, Interval(0.0, std::numeric_limits<double>::infinity()), rec)) {
 		Vector3 colTemp = (rec.normal + Vec3{1.0, 1.0, 1.0}) * 0.5;
 		return {
-			static_cast<int>(colTemp.x * 255),
-			static_cast<int>(colTemp.y * 255),
-			static_cast<int>(colTemp.z * 255)
+			colTemp.x,
+			colTemp.y,
+			colTemp.z
 		};
 	}
 
@@ -66,5 +70,24 @@ Colour<int> Camera::getRayColour(const Ray& r, const std::unique_ptr<HittableLis
 	const auto a = 0.5 * (unitDir.y + 1.0);
 	const auto res = Vector3::lerp({ 0.5, 0.7, 1.0 }, { 1.0, 1.0, 1.0 }, a);
 
-	return { static_cast<int>(res.x * 255.0), static_cast<int>(res.y * 255), static_cast<int>(res.z * 255) };
+	return { res.x, res.y, res.z };
+}
+
+Ray Camera::getRay(int i, int j)
+{
+
+	auto pixel_center = m_pixel00Loc + (m_pixelDeltaU * i) + (m_pixelDeltaV * j);
+	auto pixel_sample = pixel_center + pixelSampleSquare();
+
+	auto ray_origin = m_cameraCenter; //Doouble check this
+	auto ray_direction = pixel_sample - ray_origin;
+
+	return Ray(ray_origin, ray_direction);
+}
+
+Vector3 Camera::pixelSampleSquare() const
+{
+	auto px = -0.5 + genRandomDouble();
+	auto py = -0.5 + genRandomDouble();
+	return (m_pixelDeltaU * px) + (m_pixelDeltaV * py);
 }

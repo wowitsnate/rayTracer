@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Colour\Colour.cpp" />
     <ClCompile Include="src\Math\Interval.cpp" />
     <ClCompile Include="src\Objects\Hittable.cpp" />
     <ClCompile Include="src\Camera\Camera.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="src\Colour\Colour.h" />
     <ClInclude Include="src\PPM\PPM.h" />
     <ClInclude Include="src\Math\Vector.h" />
+    <ClInclude Include="src\Utility\Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

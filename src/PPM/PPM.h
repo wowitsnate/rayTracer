@@ -25,7 +25,7 @@ private:
 	uint32_t m_maxColours;
 
 public:
-	std::vector<Colour<int>> m_data;
+	std::vector<Colour> m_data;
 
 public:
 	PPM(uint32_t width, uint32_t height, uint32_t max_colours = 255);
@@ -34,8 +34,8 @@ public:
 	uint32_t getHeight() const;
 
 public:
-	std::unique_ptr<std::string> convertToString() const;
-	bool outputToFile(const std::string& file_path) const;
+	std::unique_ptr<std::string> convertToString(int samplesPerPixel) const;
+	bool outputToFile(const std::string& file_path,int samplesPerPixel) const;
 
 };
 

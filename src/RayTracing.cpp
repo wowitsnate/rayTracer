@@ -22,7 +22,8 @@ int main()
         Vector3{0, 0, 0},
         16.0 / 9.0,
         1.0,
-        2.0
+        2.0,
+        100
     };
 
     auto camMain = Camera(camData);
@@ -34,7 +35,7 @@ int main()
 
     camMain.render(GObjectList, ppmOutputFile);
 
-	const bool sucsess = ppmOutputFile.outputToFile("C:\\Users\\nate\\Desktop\\Debug_Testing_Output\\test1.ppm");
+	const bool sucsess = ppmOutputFile.outputToFile("C:\\Users\\nate\\Desktop\\Debug_Testing_Output\\test1.ppm", camData.samplesPerPixel);
 
     std::cout << "Did it work?: " << sucsess << std::endl;
 

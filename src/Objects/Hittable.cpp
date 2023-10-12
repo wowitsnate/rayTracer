@@ -1,9 +1,4 @@
-
 #include "../Math/Vector.h"
-
-
-
-
 
 #include "Hittable.h"
 #include <cmath>

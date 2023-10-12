@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include "../Colour/Colour.h"
+#include "../Math/Interval.h"
 #include "PPM.h"
 
 PPM::PPM(const uint32_t width, const uint32_t height, const uint32_t max_colours)
@@ -25,7 +26,7 @@ uint32_t PPM::getHeight() const
 	return m_height;
 }
 
-std::unique_ptr<std::string> PPM::convertToString() const
+std::unique_ptr<std::string> PPM::convertToString(int samplesPerPixel) const
 {
 	std::unique_ptr<std::string> res { new std::string() };
 
@@ -35,19 +36,27 @@ std::unique_ptr<std::string> PPM::convertToString() const
 	res->append(std::to_string(m_maxColours) + "\n");
 
 	//Append Data
-	for (const auto& col : m_data)
+	for (auto col : m_data)
 	{
-		res->append(col.asString() + "\n");
+		double scale = 1.0 / (double)samplesPerPixel;
+		col *= scale;
+
+		static const Interval intensity(0.000, 0.999);
+		int r = static_cast<int>(255.0 * intensity.clamp(col.r));
+		int g = static_cast<int>(255.0 * intensity.clamp(col.g));
+		int b = static_cast<int>(255.0 * intensity.clamp(col.b));
+
+		res->append(std::to_string(r) + ' ' + std::to_string(g) + ' ' + std::to_string(b) + "\n");
 	}
 
 
 	return res;
 }
 
-bool PPM::outputToFile(const std::string& file_path) const
+bool PPM::outputToFile(const std::string& file_path, int samplesPerPixel) const
 {
     try {
-        const std::unique_ptr<std::string> ppmData = convertToString();
+        const std::unique_ptr<std::string> ppmData = convertToString(samplesPerPixel);
 
         std::ofstream file(file_path);
 

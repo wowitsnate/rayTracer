@@ -17,6 +17,7 @@ public:
 public:
 	bool contains(double x) const;
 	bool surrounds(double x) const;
+	double clamp(double x) const;
 };
 
 const static Interval empty(+infinity, -infinity);

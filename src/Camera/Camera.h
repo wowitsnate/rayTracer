@@ -14,6 +14,8 @@ struct CameraInitData
 	double aspectRatio;
 	double focalLength;
 	double viewportHeight;
+
+	int samplesPerPixel;
 };
 
 class Camera
@@ -36,6 +38,8 @@ private:
 	Vector3 m_viewportUpperLeft;
 	Vector3 m_pixel00Loc;
 
+	int m_samplesPerPixel;
+
 public:
 	Camera(const CameraInitData& data);
 
@@ -45,7 +49,12 @@ public:
 
 	Point3 getCameraCenter() const { return m_cameraCenter; }
 
-	Colour<int> getRayColour(const Ray& r, const std::unique_ptr<HittableList>& HittableList);
+	Colour getRayColour(const Ray& r, const std::unique_ptr<HittableList>& HittableList);
+
+private:
+	Ray getRay(int i, int j);
+
+	Vector3 pixelSampleSquare() const;
 
 };
 
