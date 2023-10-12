@@ -11,26 +11,48 @@
 
 Camera::Camera(const CameraInitData& data)
 {
-	m_aspectRatio = data.aspectRatio;
-	m_focalLength = data.focalLength;
+	//Positions
+	m_lookFrom = data.lookFrom;
+	m_lookAt = data.lookAt;
+	m_vUp = data.vUp;
 
-	m_viewportHeight = data.viewportHeight;
-	m_viewportWidth = data.viewportHeight * (static_cast<double>(data.imageWidth) / data.imageHeight);
+	m_vfov = data.vFov;
 
-	m_cameraCenter = data.cameraCenter;
+	m_imageWidth = data.imageWidth;
+	m_imageHeight = static_cast<int>(static_cast<int>(data.imageWidth) / data.aspectRatio);
+	m_imageHeight = (m_imageHeight < 1) ? 1 : m_imageHeight;
 
-	m_viewportU = Vector3{ m_viewportWidth, 0.0, 0.0 };
-	m_viewportV = Vector3{ 0.0, -m_viewportHeight, 0.0 };
+	m_cameraCenter = m_lookFrom;
 
-	m_pixelDeltaU = m_viewportU / data.imageWidth;
-	m_pixelDeltaV = m_viewportV / data.imageHeight;
+	//viewport Dimensions
+	m_focalLength = (m_lookFrom - m_lookAt).magnitude();
 
-	m_viewportUpperLeft = m_cameraCenter - vec3(0.0, 0.0, m_focalLength) - (m_viewportU / 2) - (m_viewportV / 2);
+	auto theta = degrees_to_radians(m_vfov);
+	auto H = std::tan(theta / 2);
+	m_viewportHeight = 2 * H * m_focalLength;
+	m_viewportWidth = m_viewportHeight * (static_cast<double>(m_imageWidth) / m_imageHeight);
+
+	//u, v, w vectors
+	w = (m_lookFrom - m_lookAt).normalize();
+	u = m_vUp.cross(w).normalize();
+	v = w.cross(u);
+
+	//Horizontal and vertical viewport edges
+	m_viewportU = u * m_viewportWidth;
+	m_viewportV = (-v) * m_viewportHeight;
+
+	//horizontal and vertical delta's
+	m_pixelDeltaU = m_viewportU / m_imageWidth;
+	m_pixelDeltaV = m_viewportV / m_imageHeight;
+
+	m_viewportUpperLeft = m_cameraCenter - (w * m_focalLength) - (m_viewportU / 2) - (m_viewportV / 2);
 	m_pixel00Loc = m_viewportUpperLeft + ((m_pixelDeltaU + m_pixelDeltaV) * 0.5);
 
+	//extra stuff
 	m_samplesPerPixel = data.samplesPerPixel;
 	m_maxRayBounces = data.maxRayBounces;
 }
+
 
 void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmOut)
 {

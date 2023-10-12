@@ -4,7 +4,7 @@
 #define VECTOR_H
 
 #define VECTOR_DEFAULT_EPSILON 1e-8
-
+#include <cmath>
 
 
 class Vector3
@@ -106,6 +106,15 @@ public:
 	void normalizeInPlace();
 
 	Vector3 reflect(const Vector3& other) const;
+
+	Vector3 refract(const Vector3& other, double etaiOverEtat)
+	{
+		double cosTheta = std::min((-*this).dot(other), 1.0);
+		Vector3 rOutPurp = (*this + other * cosTheta) * etaiOverEtat;
+		Vector3 rOutParr = other * (-std::sqrt(std::abs(1.0 - rOutPurp.squaredNorm())));
+
+		return rOutPurp + rOutParr;
+	}
 
 public:
 	//This returns 3 for a vector 3. Important to note it is NOT the size(length) of the elements. That would be the magnitude

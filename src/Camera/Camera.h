@@ -4,25 +4,48 @@
 #define CAMERA_H
 #include <memory>
 
+/*
+ Image width
+ Aspect Ratio
+ VFov
+ samplesPerPixel
+ maxRaybounces
+
+ Lookfrom vec3
+ lookat vec3
+ */
+
+
 struct CameraInitData
 {
-	uint32_t imageWidth; //Can maybe just be replaced with a PPM* ?
-	uint32_t imageHeight;
-
-	Point3 cameraCenter;
-
+	int imageWidth;
 	double aspectRatio;
-	double focalLength;
-	double viewportHeight;
+	double vFov;
 
 	int samplesPerPixel;
 	int maxRayBounces;
+
+	Vector3 lookFrom;
+	Vector3 lookAt;
+	Vector3 vUp;
 };
 
 class Camera
 {
-private:
+public:
 	double m_aspectRatio;
+	int m_samplesPerPixel;
+	int m_maxRayBounces;
+	double m_vfov;
+
+	uint32_t m_imageHeight;
+	uint32_t m_imageWidth;
+
+	Point3 m_lookFrom = point3(0, 0, -1);
+	Point3 m_lookAt = point3(0, 0, 0);
+	Vector3 m_vUp = vec3(0, 1, 0); 
+
+private:
 	double m_focalLength;
 
 	double m_viewportHeight;
@@ -39,8 +62,11 @@ private:
 	Vector3 m_viewportUpperLeft;
 	Vector3 m_pixel00Loc;
 
-	int m_samplesPerPixel;
-	int m_maxRayBounces;
+
+
+	Vec3 u, v, w; //Camera frame basis vectors;
+
+	
 
 public:
 	Camera(const CameraInitData& data);
