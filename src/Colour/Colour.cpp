@@ -8,13 +8,18 @@ Colour::Colour(double p_r, double p_g, double p_b)
 	b = p_b;
 }
 
-inline Colour Colour::operator*(const double factor) const
+Colour Colour::operator*(const double factor) const
 {
 	return {
 		this->r * factor,
 		this->g * factor,
 		this->b * factor
 	};
+}
+
+Colour Colour::operator*(const Colour& other) const
+{
+	return { r * other.r, g * other.g, b * other.b };
 }
 
 void Colour::operator*=(const double factor)

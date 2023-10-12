@@ -26,6 +26,11 @@ uint32_t PPM::getHeight() const
 	return m_height;
 }
 
+inline double linearToGamma(double linearComponent)
+{
+	return sqrt(linearComponent);
+}
+
 std::unique_ptr<std::string> PPM::convertToString(int samplesPerPixel) const
 {
 	std::unique_ptr<std::string> res { new std::string() };
@@ -40,6 +45,10 @@ std::unique_ptr<std::string> PPM::convertToString(int samplesPerPixel) const
 	{
 		double scale = 1.0 / (double)samplesPerPixel;
 		col *= scale;
+
+		col.r = linearToGamma(col.r);
+		col.g = linearToGamma(col.g);
+		col.b = linearToGamma(col.b);
 
 		static const Interval intensity(0.000, 0.999);
 		int r = static_cast<int>(255.0 * intensity.clamp(col.r));

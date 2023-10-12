@@ -18,6 +18,7 @@ public:
 	Colour() = default;
 
 	Colour operator*(const double factor) const;
+	Colour operator*(const Colour& other) const;
 	void operator*=(const double factor);
 	void operator+=(const Colour& other);
 

@@ -17,6 +17,7 @@ public:
 	Vector3 direction;
 
 public:
+	Ray() = default;
 	Ray(const Point3& p_origin, const Vector3& p_direction) : origin(p_origin), direction(p_direction) {}
 
 	Point3 at(const double t) const;

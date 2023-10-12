@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Materials\Material.cpp" />
     <ClCompile Include="src\Colour\Colour.cpp" />
     <ClCompile Include="src\Math\Interval.cpp" />
     <ClCompile Include="src\Objects\Hittable.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="src\Math\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Materials\Material.h" />
     <ClInclude Include="src\Math\Interval.h" />
     <ClInclude Include="src\Objects\Hittable.h" />
     <ClInclude Include="src\Camera\Camera.h" />

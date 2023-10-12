@@ -7,6 +7,8 @@
 #include "../Utility/Utility.h"
 #include <iostream>
 
+#include "../Materials/Material.h"
+
 Camera::Camera(const CameraInitData& data)
 {
 	m_aspectRatio = data.aspectRatio;
@@ -27,6 +29,7 @@ Camera::Camera(const CameraInitData& data)
 	m_pixel00Loc = m_viewportUpperLeft + ((m_pixelDeltaU + m_pixelDeltaV) * 0.5);
 
 	m_samplesPerPixel = data.samplesPerPixel;
+	m_maxRayBounces = data.maxRayBounces;
 }
 
 void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmOut)
@@ -41,7 +44,7 @@ void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmO
 
 			for (int sample = 0; sample < m_samplesPerPixel; ++sample) {
 				Ray r = getRay(i, j);
-				PixelColour += this->getRayColour(r, HittableList);
+				PixelColour += this->getRayColour(r, m_maxRayBounces, HittableList);
 			}
 
 			ppmOut.m_data.push_back(PixelColour);
@@ -54,16 +57,25 @@ Vector3 Camera::getPixelCenter(const int i, const int j) const
 	return m_pixel00Loc + (m_pixelDeltaU * i) + (m_pixelDeltaV * j);
 }
 
-Colour Camera::getRayColour(const Ray& r, const std::unique_ptr<HittableList>& HittableList)
+Colour Camera::getRayColour(const Ray& r, int depth, const std::unique_ptr<HittableList>& HittableList)
 {
 	HitRecord rec;
-	if (HittableList->intersects(r, Interval(0.0, std::numeric_limits<double>::infinity()), rec)) {
-		Vector3 colTemp = (rec.normal + Vec3{1.0, 1.0, 1.0}) * 0.5;
-		return {
-			colTemp.x,
-			colTemp.y,
-			colTemp.z
-		};
+
+	if (depth < 0)
+	{
+		return { 0.0, 0.0, 0.0 };
+	}
+
+	if (HittableList->intersects(r, Interval(0.001, std::numeric_limits<double>::infinity()), rec)) {
+
+		Ray scattered;
+		Colour attenuation;
+
+
+		if (rec.mat->scatter(r, rec, attenuation, scattered))
+			return getRayColour(scattered, depth - 1, HittableList) * attenuation;
+
+		return Colour(0.0, 0.0, 0.0);
 	}
 
 	const Vector3 unitDir = r.direction.normalize();

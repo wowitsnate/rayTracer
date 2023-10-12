@@ -3,7 +3,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#define VECTOR_DEFAULT_EPSILON 1e-6
+#define VECTOR_DEFAULT_EPSILON 1e-8
 
 
 
@@ -33,6 +33,7 @@ public:
 	Vector3 operator-(const Vector3& other) const;
 	Vector3 operator-() const;
 	Vector3 operator*(const double factor) const;
+	Vector3 operator*(const Vector3& other) const;
 	Vector3 operator/(const double factor) const;
 
 	Vector3& operator+=(const Vector3& other);
@@ -104,6 +105,8 @@ public:
 
 	void normalizeInPlace();
 
+	Vector3 reflect(const Vector3& other) const;
+
 public:
 	//This returns 3 for a vector 3. Important to note it is NOT the size(length) of the elements. That would be the magnitude
 	static int size();
@@ -111,6 +114,10 @@ public:
 	static Vector3 lerp(const Vector3& start, const Vector3& end, double percent);
 
 	static Vector3 slerp(const Vector3& start, const Vector3& end, double percent);
+
+	static Vector3 random(); //Within the range 0.0->1.0
+
+	static Vector3 random(double min, double max);
 };
 
 /*
@@ -118,6 +125,27 @@ inline std::ostream& operator<<(std::ostream& out, const Vector3& v) {
 	return out << v.x << ' ' << v.y << ' ' << v.z;
 }*/
 
+inline Vector3 randomInUnitSphere()
+{
+	while (true) {
+		auto p = Vector3::random(-1, 1);
+		if (p.squaredNorm() < 1)
+			return p;
+	}
+}
+
+inline Vector3 randomUnitVector()
+{
+	return randomInUnitSphere().normalize();
+}
+
+inline Vector3 randomOnHemisphere(const Vector3& normal) {
+	const Vector3 onUnitSphere = randomUnitVector();
+	if (onUnitSphere.dot(normal) > 0.0)
+		return onUnitSphere;
+	else
+		return -onUnitSphere;
+}
 
 using Point3 = Vector3;
 using point3 = Vector3;

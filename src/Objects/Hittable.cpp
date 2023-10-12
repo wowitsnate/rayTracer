@@ -27,6 +27,7 @@ bool Sphere::intersects(const Ray& r, Interval ray_t, HitRecord& rec)
     rec.p = r.at(rec.t);
     const vec3 outward_normal = (rec.p - m_center) / m_radius;
     rec.set_face_normal(r, outward_normal);
+    rec.mat = m_material;
 
     return true;
 }

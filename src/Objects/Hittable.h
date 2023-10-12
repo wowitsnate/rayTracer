@@ -9,14 +9,19 @@
 #include "../Math/Interval.h"
 #include "../Ray/Ray.h"
 
+class Material;
 
 struct HitRecord {
 	point3 p;
 	vec3 normal;
+
+	std::shared_ptr<Material> mat;
+
 	double t;
 	bool frontFace;
 
 	void set_face_normal(const Ray& r, const vec3& outward_normal);
+	HitRecord() = default;
 };
 
 
@@ -35,8 +40,10 @@ private:
 	Vector3 m_center;
 	double m_radius;
 
+	const std::shared_ptr<Material> m_material;
+
 public:
-	Sphere(const Vector3& center, const double radius) : m_center(center), m_radius(radius) {}
+	Sphere(const Vector3& center, const double radius, const std::shared_ptr<Material>& material) : m_center(center), m_radius(radius), m_material(material){}
 
 	virtual bool intersects(const Ray& r, Interval ray_t, HitRecord& rec) override;
 };

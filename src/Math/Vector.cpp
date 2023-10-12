@@ -6,6 +6,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>
+#include "../Utility/Utility.h"
 
 Vector3::Vector3()
 {
@@ -81,6 +82,11 @@ Vector3 Vector3::operator-() const
 Vector3 Vector3::operator*(const double factor) const
 {
 	return { this->x * factor, this->y * factor, this->z * factor };
+}
+
+Vector3 Vector3::operator*(const Vector3& other) const
+{
+	return { x * other.x, y * other.y, z * other.z };
 }
 
 Vector3 Vector3::operator/(const double factor) const
@@ -229,6 +235,10 @@ void Vector3::normalizeInPlace()
 	}
 }
 
+Vector3 Vector3::reflect(const Vector3& other) const {
+	return *this - (other * 2 * this->dot(other));
+}
+
 int Vector3::size()
 {
 	return 3;
@@ -252,3 +262,20 @@ Vector3 Vector3::slerp(const Vector3& start, const Vector3& end, const double pe
 	return { (start * std::cos(theta)) + (relative * std::sin(theta)) };
 }
 
+Vector3 Vector3::random()
+{
+	return {
+		genRandomDouble(),
+		genRandomDouble(),
+		genRandomDouble()
+	};
+}
+
+Vector3 Vector3::random(double min, double max)
+{
+	return {
+		genRandomDoubleRange(min, max),
+		genRandomDoubleRange(min, max),
+		genRandomDoubleRange(min, max)
+	};
+}

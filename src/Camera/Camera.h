@@ -16,6 +16,7 @@ struct CameraInitData
 	double viewportHeight;
 
 	int samplesPerPixel;
+	int maxRayBounces;
 };
 
 class Camera
@@ -39,6 +40,7 @@ private:
 	Vector3 m_pixel00Loc;
 
 	int m_samplesPerPixel;
+	int m_maxRayBounces;
 
 public:
 	Camera(const CameraInitData& data);
@@ -49,7 +51,7 @@ public:
 
 	Point3 getCameraCenter() const { return m_cameraCenter; }
 
-	Colour getRayColour(const Ray& r, const std::unique_ptr<HittableList>& HittableList);
+	Colour getRayColour(const Ray& r, int depth, const std::unique_ptr<HittableList>& HittableList);
 
 private:
 	Ray getRay(int i, int j);
