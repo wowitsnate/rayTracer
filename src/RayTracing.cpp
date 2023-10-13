@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+
 #include "../src/Math/Vector.h"
 #include "../src/Objects/Hittable.h"
 #include "../src/Colour/Colour.h"
@@ -22,8 +24,8 @@ int main()
         ImageWidth,
         16.0 / 9.0,
         20,
-        1000,
-        100,
+        2000,
+        300,
         Point3(13.0,2.0,3.0),
         Point3(0.0, 0.0, 0.0),
         Vector3(0.0, 1.0, 0.0),
@@ -81,12 +83,17 @@ int main()
     auto material3 = std::make_shared<Metal>(Colour(0.7, 0.6, 0.5), 0.0);
     GObjectList->addObject(std::make_shared<Sphere>(point3(4, 1, 0), 1.0, material3));
 
+    auto start = std::chrono::high_resolution_clock::now();
 
     camMain.render(GObjectList, ppmOutputFile);
 
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = duration_cast<std::chrono::microseconds>(stop - start);
+
 	const bool sucsess = ppmOutputFile.outputToFile("C:\\Users\\nate\\Desktop\\Debug_Testing_Output\\test1.ppm", camData.samplesPerPixel);
 
-    std::cout << "Did it work?: " << sucsess << std::endl;
+    std::cout << "\nDid it work?: " << sucsess << std::endl;
+    std::cout << "time taken (microseconds): " << duration.count() << std::endl;
     system("pause");
 
     return 0;

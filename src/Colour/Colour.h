@@ -15,7 +15,7 @@ public:
 	double b;
 public:
 	Colour(double p_r, double p_g, double p_b);
-	Colour() = default;
+	Colour() : r(0.0), g(0.0), b(0.0) {};
 
 	Colour operator*(const double factor) const;
 	Colour operator*(const Colour& other) const;

@@ -4,10 +4,16 @@
 #include "../Objects/Hittable.h"
 #include "../PPM/PPM.h"
 #include "Camera.h"
+
+#include <future>
+
 #include "../Utility/Utility.h"
 #include <iostream>
+#include <thread>
 
 #include "../Materials/Material.h"
+
+#define NUMBER_OF_THREADS 200
 
 Camera::Camera(const CameraInitData& data)
 {
@@ -61,9 +67,10 @@ Camera::Camera(const CameraInitData& data)
 	m_maxRayBounces = data.maxRayBounces;
 }
 
-
+/*
 void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmOut)
 {
+
 	for (auto j = 0; j < ppmOut.getHeight(); ++j) {
 
 		std::clog << "\rScanlines Percent Done: " << (int)(((double)(j) / (double)ppmOut.getHeight()) * 100.0) << "% " << std::flush;
@@ -80,7 +87,94 @@ void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmO
 			ppmOut.m_data.push_back(PixelColour);
 		}
 	}
+}*/
+
+struct thread_info_t
+{
+	int i;
+	int j;
+	int sample_amount;
+	int max_ray_bounces;
+	const std::unique_ptr<HittableList>& hitList;
+	Camera* pThis;
+};
+
+Colour RayColourThread(const thread_info_t& info)
+{
+	auto res = Colour(0.0 ,0.0, 0.0);
+
+	for (int sample_count = 0; sample_count < info.sample_amount; ++sample_count)
+	{
+		Ray r = info.pThis->getRay(info.i, info.j);
+		res += info.pThis->getRayColour(r, info.max_ray_bounces, info.hitList);
+	}
+
+	return res;
 }
+
+
+std::vector<int> split_evenly(int total, int workers) {
+	std::vector<int> split = {};
+
+	const auto [quotient, remainder] = std::div(total, workers);
+
+	for (int i = 0; i < remainder; i++)
+	{
+		split.push_back(quotient + 1);
+	}
+
+	for (int i = 0; i < (workers - remainder); i++)
+	{
+		split.push_back(quotient);
+	}
+
+	return split;
+}
+
+
+void Camera::render(const std::unique_ptr<HittableList>& HittableList, PPM& ppmOut)
+{
+
+	for (auto j = 0; j < ppmOut.getHeight(); ++j) {
+
+		std::clog << "\rScanlines Percent Done: " << (int)(((double)(j) / (double)ppmOut.getHeight()) * 100.0) << "% " << std::flush;
+
+		for (auto i = 0; i < ppmOut.getWidth(); ++i) {
+
+			std::vector<std::future<Colour>> worker_asyncs;
+			std::vector<int> worker_counts = split_evenly(m_samplesPerPixel, NUMBER_OF_THREADS);
+
+			for (int z = 0; z < NUMBER_OF_THREADS; z++)
+			{
+				thread_info_t info{
+					i,
+					j,
+					worker_counts[z],
+					m_maxRayBounces,
+					HittableList,
+					this
+				};
+
+				auto a = std::async(&RayColourThread, info);
+				worker_asyncs.push_back(std::move(a));
+			}
+
+			Colour PixelColour = Colour(0.0, 0.0, 0.0);
+			for (auto & a : worker_asyncs)
+			{
+				a.wait();
+				PixelColour += a.get();
+			}
+
+
+			ppmOut.m_data.push_back(PixelColour);
+		}
+	}
+}
+
+
+
+
 
 Vector3 Camera::getPixelCenter(const int i, const int j) const
 {

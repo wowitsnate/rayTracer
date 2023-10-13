@@ -86,12 +86,16 @@ public:
 
 	Colour getRayColour(const Ray& r, int depth, const std::unique_ptr<HittableList>& HittableList);
 
-private:
 	Ray getRay(int i, int j);
+
+private:
+	
 
 	Vector3 pixelSampleSquare() const;
 
 	Point3 defocusDiskSample() const;
+
+	
 
 };
 
